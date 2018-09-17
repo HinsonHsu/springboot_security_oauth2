@@ -1,0 +1,17 @@
+package cn.hinson.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+    @GetMapping
+    public String getUsers(Principal principal) {
+            return principal.toString();
+    }
+}
