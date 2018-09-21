@@ -1,6 +1,15 @@
-package cn.hinson.controller.security;
+package cn.hinson.security;
 
-import cn.hinson.controller.security.oauth2.ClientResources;
+import cn.hinson.security.oauth2.ClientResources;
+import cn.hinson.dao.UserDao;
+import cn.hinson.security.service.MyUserDetailsService;
+import cn.hinson.security.service.MyUserInfoTokenServices;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Resource;
+import javax.servlet.Filter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -23,52 +33,58 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.filter.CompositeFilter;
 
-import javax.servlet.Filter;
-import java.util.ArrayList;
-import java.util.List;
-
 
 @Configuration
 @EnableOAuth2Client
-@EnableAuthorizationServer
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     OAuth2ClientContext oauth2ClientContext;
+    @Autowired
+    UserDao userDao;
+    @Resource(name = "FacebookPrincipalExtractor")
+    FacebookPrincipalExtractor facebookPrincipalExtractor;
+
+    @Bean
+    UserDetailsService detailsService(){
+        return new MyUserDetailsService();
+    }
+
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // @formatter:off
-        http.formLogin().and().antMatcher("/**").authorizeRequests()
-                .antMatchers("/", "/login**", "/webjars/**").permitAll()
+        Log logger = LogFactory.getLog(SecurityConfig.class);
+        logger.info("HttpSecurity http");
+        http.antMatcher("/**").authorizeRequests()
+                .antMatchers("/", "/login**", "/webjars/**", "/test").permitAll()
                 .anyRequest()
                 .authenticated().and().exceptionHandling()
-                .and().logout()
-                .logoutSuccessUrl("/").permitAll().and().csrf()
+                .and()
+                    .logout().
+                    logoutUrl("/logout").
+                    logoutSuccessUrl("/")
+                .and()
+                .csrf()
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
-                .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
+                .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class)
+                .formLogin();
         // @formatter:on
     }
 
-//    @Autowired
-//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+
 //        auth.inMemoryAuthentication()
 //                .passwordEncoder(new BCryptPasswordEncoder())
 //                .withUser("user1")
 //                .password(new BCryptPasswordEncoder().encode("123456"))
 //                .roles("USER");
-//    }
 
-    @Configuration
-    @EnableResourceServer
-    protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
-        @Override
-        public void configure(HttpSecurity http) throws Exception {
-            // @formatter:off
-            http.antMatcher("/me").authorizeRequests().anyRequest().authenticated();
-            // @formatter:on
-        }
+        auth.userDetailsService(detailsService()).passwordEncoder(new BCryptPasswordEncoder());
     }
+
 
     @Bean
     public FilterRegistrationBean<OAuth2ClientContextFilter> oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
@@ -81,23 +97,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     @ConfigurationProperties("github")
     public ClientResources github() {
-        return new ClientResources();
+        return new ClientResources("github");
     }
 
     @Bean
     @ConfigurationProperties("facebook")
     public ClientResources facebook() {
-        return new ClientResources();
+        return new ClientResources("facebook");
     }
 
     private Filter ssoFilter() {
         CompositeFilter filter = new CompositeFilter();
         List<Filter> filters = new ArrayList<>();
         filters.add(ssoFilter(facebook(), "/login/facebook"));
-//        filters.add(ssoFilter(github(), "/login/github"));
+        filters.add(ssoFilter(github(), "/login/github"));
         filter.setFilters(filters);
         return filter;
     }
+
 
 
     private Filter ssoFilter(ClientResources client, String path) {
@@ -105,9 +122,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 path);
         OAuth2RestTemplate template = new OAuth2RestTemplate(client.getClient(), oauth2ClientContext);
         filter.setRestTemplate(template);
-        System.out.println("hinson: " + client.getClient().getClientId());
-        UserInfoTokenServices tokenServices = new UserInfoTokenServices(
-                client.getResource().getUserInfoUri(), client.getClient().getClientId());
+//        UserInfoTokenServices tokenServices = new UserInfoTokenServices(
+//                client.getResource().getUserInfoUri(), client.getClient().getClientId());
+        UserInfoTokenServices tokenServices = new MyUserInfoTokenServices(
+                client.getOauth2Type(),client.getResource().getUserInfoUri(), client.getClient().getClientId(), userDao);
         tokenServices.setRestTemplate(template);
         filter.setTokenServices(tokenServices);
         return filter;

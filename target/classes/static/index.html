@@ -61,7 +61,8 @@
             }
           });
           $.get("/user", function(data) {
-            $("#user").html(data.userAuthentication.details.name);
+            console.log(data);
+            $("#user").html(data.principal.username);
             $(".unauthenticated").hide();
             $(".authenticated").show();
           });

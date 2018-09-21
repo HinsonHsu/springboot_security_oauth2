@@ -1,4 +1,4 @@
-package cn.hinson.controller.security.oauth2;
+package cn.hinson.security.oauth2;
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -11,6 +11,15 @@ public class ClientResources {
 
     @NestedConfigurationProperty
     private ResourceServerProperties resource = new ResourceServerProperties();
+
+    private String Oauth2Type;
+    public ClientResources(String type){
+        this.Oauth2Type = type;
+    }
+
+    public String getOauth2Type(){
+        return this.Oauth2Type;
+    }
 
     public AuthorizationCodeResourceDetails getClient() {
         return client;

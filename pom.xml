@@ -83,7 +83,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>6.0.5</version>
+      <version>5.1.32</version>
     </dependency>
 
     <!--mybatis-->
@@ -101,16 +101,11 @@
       <artifactId>mybatis-spring</artifactId>
       <version>${mybatis-spring.version}</version>
     </dependency>
+    <!-- mysql数据库连接池 pool -->
     <dependency>
-      <groupId>com.mchange</groupId>
-      <artifactId>c3p0</artifactId>
-      <version>0.9.5.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>com.alibaba</groupId>
+      <artifactId>druid</artifactId>
+      <version>1.0.15</version>
     </dependency>
   </dependencies>
 

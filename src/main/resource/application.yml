@@ -5,14 +5,6 @@
 #      password: password
 #      roles: admin
 
-security:
-  oauth2:
-    client:
-      client-id: acme
-      client-secret: acmesecret
-      scope: read,write
-      auto-approve-scopes: '.*'
-
 facebook:
   client:
     clientId: 233668646673605
@@ -39,7 +31,13 @@ logging:
     org.springframework.security: DEBUG
 spring:
   datasource:
-    name: jdbc:mysql://localhost:3306/cache?characterEncoding=utf-8&useSSL=false
     username: root
     password: shuxinsheng
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    platform: mysql
+    url: jdbc:mysql://localhost:3306/springboot_security_oauth2_sso?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

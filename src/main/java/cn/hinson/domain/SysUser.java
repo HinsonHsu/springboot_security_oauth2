@@ -6,6 +6,8 @@ public class SysUser {
     private Integer id;
     private String username;
     private String password;
+    private String facebookId;
+    private String twitterId;
 
     private List<SysRole> roles;
 
@@ -31,6 +33,22 @@ public class SysUser {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getFacebookId() {
+        return facebookId;
+    }
+
+    public void setFacebookId(String facebookId) {
+        this.facebookId = facebookId;
+    }
+
+    public String getTwitterId() {
+        return twitterId;
+    }
+
+    public void setTwitterId(String twitterId) {
+        this.twitterId = twitterId;
     }
 
     public List<SysRole> getRoles() {

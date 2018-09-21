@@ -17,4 +17,26 @@
         LEFT JOIN Sys_Role r on sru.Sys_Role_id=r.id
         where username= #{username}
     </select>
+
+    <insert id="create" parameterType="cn.hinson.domain.SysUser">
+        insert into sys_user(username, password, facebookid, twitterid) values(#{username}, #{password},  #{facebookId},  #{twitterId})
+    </insert>
+
+    <select id="findByFacebook" parameterType="String" resultMap="userMap">
+        select u.*
+        ,r.name
+        from Sys_User u
+        LEFT JOIN sys_role_user sru on u.id= sru.Sys_User_id
+        LEFT JOIN Sys_Role r on sru.Sys_Role_id=r.id
+        where facebookid= #{facebookId}
+    </select>
+
+    <select id="findByTwitter" parameterType="String" resultMap="userMap">
+        select u.*
+        ,r.name
+        from Sys_User u
+        LEFT JOIN sys_role_user sru on u.id= sru.Sys_User_id
+        LEFT JOIN Sys_Role r on sru.Sys_Role_id=r.id
+        where twitterid= #{twitterId}
+    </select>
 </mapper>

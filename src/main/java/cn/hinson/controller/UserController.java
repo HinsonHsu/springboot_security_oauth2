@@ -11,7 +11,7 @@ import java.security.Principal;
 @RequestMapping("/user")
 public class UserController {
     @GetMapping
-    public String getUsers(Principal principal) {
-            return principal.toString();
+    public Principal getUsers(Principal principal) {
+            return principal;
     }
 }
